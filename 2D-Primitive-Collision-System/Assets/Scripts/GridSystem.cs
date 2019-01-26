@@ -24,6 +24,8 @@ public class GridSystem : MonoBehaviour {
     [Header("Debug")]
     [SerializeField]
     private Grid[,] grids;
+    [SerializeField]
+    private Vector3 _offset;
 
     private List<Grid> _createdGrids = new List<Grid>();
 
@@ -39,13 +41,16 @@ public class GridSystem : MonoBehaviour {
             _parent = new GameObject("Parent").transform;
         }
 
+        _offset = new Vector3(-MAP_WIDTH * 0.5f, 0f, -MAP_HEIGHT * 0.5f);
+        int indexer = 0;
+
         for (int ii = 0; ii < COLUMN; ii++) {
             for (int jj = 0; jj < ROW; jj++) {
-                Grid grid = Instantiate(_gridPrefab, new Vector3(ii * SCALE_X, 0f, jj * SCALE_Y), Quaternion.identity).GetComponent<Grid>();
+                Grid grid = Instantiate(_gridPrefab, _offset + new Vector3(ii * SCALE_X, 0f, jj * SCALE_Y), Quaternion.identity).GetComponent<Grid>();
                 grid.Size = new Vector2(SCALE_X, SCALE_Y);
+                grid.Index = indexer++;
                 grid.transform.localScale = new Vector3 (grid.Size.x, 1f, grid.Size.y);
                 grid.transform.SetParent(_parent);
-
                 _createdGrids.Add(grid);
             }
         }
@@ -53,7 +58,9 @@ public class GridSystem : MonoBehaviour {
 
     public void DeleteGrids() {
         for (int ii = 0; ii < _createdGrids.Count; ii++) {
-            DestroyImmediate(_createdGrids[ii].gameObject);
+            if (_createdGrids[ii] != null) {
+                DestroyImmediate(_createdGrids[ii].gameObject);
+            }
         }
 
         _createdGrids = new List<Grid>();
