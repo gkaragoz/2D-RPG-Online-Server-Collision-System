@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class GridSystem : MonoBehaviour {
 
     public bool IsCreated { get { return _createdGrids.Count > 0 ? true : false; } }
@@ -9,6 +10,8 @@ public class GridSystem : MonoBehaviour {
     [Header("Initialization")]
     [SerializeField]
     private GameObject _gridPrefab;
+    [SerializeField]
+    private Transform _target;
 
     [Header("Settings")]
     [SerializeField]
@@ -20,37 +23,60 @@ public class GridSystem : MonoBehaviour {
     private int ROW = 3;
     [SerializeField]
     private int COLUMN = 3;
+    [SerializeField]
+    float SCALE_X = 1;
+    [SerializeField]
+    float SCALE_Y = 1;
 
     [Header("Debug")]
     [SerializeField]
-    private Grid[,] grids;
-    [SerializeField]
-    private Vector3 _offset;
+    private Grid[,] _grids;
 
     private List<Grid> _createdGrids = new List<Grid>();
 
     private Transform _parent;
 
-    public void CreateGrids() {
-        grids = new Grid[ROW, COLUMN];
+    private void Update() {
+        if (IsCreated) {
+            Vector2 targetScale = new Vector2(_target.localScale.x, _target.localScale.z);
+            Vector2 targetPosition = new Vector2(_target.localPosition.x, _target.localPosition.z);
 
-        float SCALE_X = MAP_WIDTH / COLUMN;
-        float SCALE_Y = MAP_HEIGHT / ROW;
+            Vector2 minDecisionPosition = targetPosition - (targetScale * 0.5f);
+            Vector2 maxDecisionPosition = targetPosition + (targetScale * 0.5f);
+
+            Vector2 minGridIndexRatio = minDecisionPosition / new Vector2(SCALE_X, SCALE_Y);
+            Vector2 maxGridIndexRatio = maxDecisionPosition / new Vector2(SCALE_X, SCALE_Y);
+
+            Vector2 reelMinIndex = new Vector2(Mathf.FloorToInt(minGridIndexRatio.x), Mathf.FloorToInt(minGridIndexRatio.y));
+            Vector2 reelMaxIndex = new Vector2(Mathf.FloorToInt(maxGridIndexRatio.x), Mathf.FloorToInt(maxGridIndexRatio.y));
+
+            for (int ii = (int)reelMinIndex.x; ii <= reelMaxIndex.x; ii++) {
+                for (int jj = (int)reelMinIndex.y; jj <= reelMaxIndex.y; jj++) {
+                    _grids[ii, jj].Paint();
+                }
+            }
+        }
+    }
+
+    public void CreateGrids() {
+        _grids = new Grid[ROW, COLUMN];
+
+        SCALE_X = MAP_WIDTH / COLUMN;
+        SCALE_Y = MAP_HEIGHT / ROW;
 
         if (_parent == null) {
             _parent = new GameObject("Parent").transform;
         }
 
-        _offset = new Vector3(-MAP_WIDTH * 0.5f, 0f, -MAP_HEIGHT * 0.5f);
-        int indexer = 0;
-
-        for (int ii = 0; ii < COLUMN; ii++) {
-            for (int jj = 0; jj < ROW; jj++) {
-                Grid grid = Instantiate(_gridPrefab, _offset + new Vector3(ii * SCALE_X, 0f, jj * SCALE_Y), Quaternion.identity).GetComponent<Grid>();
+        for (int ii = 0; ii < ROW; ii++) {
+            for (int jj = 0; jj < COLUMN; jj++) {
+                Grid grid = Instantiate(_gridPrefab, new Vector3(SCALE_X * 0.5f + (ii * SCALE_X), 0f, SCALE_Y * 0.5f + (jj * SCALE_Y)), Quaternion.identity).GetComponent<Grid>();
                 grid.Size = new Vector2(SCALE_X, SCALE_Y);
-                grid.Index = indexer++;
-                grid.transform.localScale = new Vector3 (grid.Size.x, 1f, grid.Size.y);
+                grid.Matrix = new Vector2(ii, jj);
+                grid.transform.localScale = new Vector3(grid.Size.x, 1f, grid.Size.y);
                 grid.transform.SetParent(_parent);
+
+                _grids[ii, jj] = grid;
                 _createdGrids.Add(grid);
             }
         }
