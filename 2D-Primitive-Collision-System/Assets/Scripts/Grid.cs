@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -32,7 +33,9 @@ public class Grid : MonoBehaviour {
     public Vector3 Position { get => _position; set => _position = value; }
     public bool HasInvaded { get => _hasInvaded; set => _hasInvaded = value; }
     public bool IsObstacle { get => _isObstacle; set => _isObstacle = value; }
+    public List<Grid> Neighbours { get => _neighbours; set => _neighbours = value; }
 
+    private List<Grid> _neighbours = new List<Grid>();
     private Coroutine _painterCoroutine;
 
     private void Start() {
