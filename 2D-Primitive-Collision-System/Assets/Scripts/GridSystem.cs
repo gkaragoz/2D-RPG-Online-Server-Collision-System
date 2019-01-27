@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 [ExecuteInEditMode]
 public class GridSystem : MonoBehaviour {
 
-    public bool IsCreated { get { return _createdGrids.Count > 0 ? true : false; } }
+    public bool IsCreated { get { return _grids == null ? false : true; } }
 
     [Header("Initialization")]
     [SerializeField]
@@ -23,18 +22,37 @@ public class GridSystem : MonoBehaviour {
     private int ROW = 3;
     [SerializeField]
     private int COLUMN = 3;
+
+    [Header("Debug")]
     [SerializeField]
     float SCALE_X = 1;
     [SerializeField]
     float SCALE_Y = 1;
-
-    [Header("Debug")]
     [SerializeField]
     private Grid[,] _grids;
 
-    private List<Grid> _createdGrids = new List<Grid>();
-
     private Transform _parent;
+
+    private void Start() {
+        Initialize();
+    }
+
+    private void Initialize() {
+        if (_grids == null) {
+            _grids = new Grid[ROW, COLUMN];
+
+            _parent = GameObject.Find("Parent").transform;
+            if (_parent != null) {
+                if (_parent.childCount > 0) {
+                    for (int ii = 0; ii < ROW; ii++) {
+                        for (int jj = 0; jj < COLUMN; jj++) {
+                            _grids[ii, jj] = _parent.GetComponentInChildren<Grid>();
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private void Update() {
         if (IsCreated) {
@@ -77,19 +95,22 @@ public class GridSystem : MonoBehaviour {
                 grid.transform.SetParent(_parent);
 
                 _grids[ii, jj] = grid;
-                _createdGrids.Add(grid);
             }
         }
     }
 
     public void DeleteGrids() {
-        for (int ii = 0; ii < _createdGrids.Count; ii++) {
-            if (_createdGrids[ii] != null) {
-                DestroyImmediate(_createdGrids[ii].gameObject);
+        Initialize();
+
+        for (int ii = 0; ii < _grids.GetLength(0); ii++) {
+            for (int jj = 0; jj < _grids.GetLength(1); jj++) {
+                if (_grids[ii, jj] != null) {
+                    DestroyImmediate(_grids[ii, jj].gameObject);
+                }
             }
         }
 
-        _createdGrids = new List<Grid>();
+        _grids = null;
     }
 
 }
