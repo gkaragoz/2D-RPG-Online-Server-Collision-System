@@ -34,51 +34,6 @@ public class GridSystem : MonoBehaviour {
 
     private Transform _parent;
 
-    private void Start() {
-        Initialize();
-    }
-
-    private void Initialize() {
-        if (_grids == null) {
-            _grids = new Grid[ROW, COLUMN];
-
-            _parent = GameObject.Find("Parent").transform;
-            if (_parent != null) {
-                if (_parent.childCount > 0) {
-                    Grid[] childGrids = _parent.GetComponentsInChildren<Grid>();
-
-                    for (int ii = 0; ii < ROW; ii++) {
-                        for (int jj = 0; jj < COLUMN; jj++) {
-                            _grids[ii, jj] = childGrids.Where(grid => grid.Matrix == new Vector2(ii, jj)).First();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void Update() {
-        if (IsCreated) {
-            Vector2 targetScale = new Vector2(_target.localScale.x, _target.localScale.z);
-            Vector2 targetPosition = new Vector2(_target.localPosition.x, _target.localPosition.z);
-
-            Vector2 minDecisionPosition = targetPosition - (targetScale * 0.5f);
-            Vector2 maxDecisionPosition = targetPosition + (targetScale * 0.5f);
-
-            Vector2 minGridIndexRatio = minDecisionPosition / new Vector2(SCALE_X, SCALE_Y);
-            Vector2 maxGridIndexRatio = maxDecisionPosition / new Vector2(SCALE_X, SCALE_Y);
-
-            Vector2 reelMinIndex = new Vector2(Mathf.FloorToInt(minGridIndexRatio.x), Mathf.FloorToInt(minGridIndexRatio.y));
-            Vector2 reelMaxIndex = new Vector2(Mathf.FloorToInt(maxGridIndexRatio.x), Mathf.FloorToInt(maxGridIndexRatio.y));
-
-            for (int ii = (int)reelMinIndex.x; ii <= reelMaxIndex.x; ii++) {
-                for (int jj = (int)reelMinIndex.y; jj <= reelMaxIndex.y; jj++) {
-                    _grids[ii, jj].Paint();
-                }
-            }
-        }
-    }
-
     public void CreateGrids() {
         _grids = new Grid[ROW, COLUMN];
 
@@ -114,6 +69,55 @@ public class GridSystem : MonoBehaviour {
         }
 
         _grids = null;
+    }
+
+    private void Initialize() {
+        if (_grids == null) {
+            _grids = new Grid[ROW, COLUMN];
+
+            _parent = GameObject.Find("Parent").transform;
+            if (_parent != null) {
+                if (_parent.childCount > 0) {
+                    Grid[] childGrids = _parent.GetComponentsInChildren<Grid>();
+
+                    for (int ii = 0; ii < ROW; ii++) {
+                        for (int jj = 0; jj < COLUMN; jj++) {
+                            _grids[ii, jj] = childGrids.Where(grid => grid.Matrix == new Vector2(ii, jj)).First();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void LateUpdate() {
+        if (IsCreated) {
+            SearchTarget();
+        }
+    }
+
+    private void SearchTarget() {
+        Vector2 targetScale = new Vector2(_target.localScale.x, _target.localScale.z);
+        Vector2 targetPosition = new Vector2(_target.localPosition.x, _target.localPosition.z);
+
+        Vector2 minDecisionPosition = targetPosition - (targetScale * 0.5f);
+        Vector2 maxDecisionPosition = targetPosition + (targetScale * 0.5f);
+
+        Vector2 minGridIndexRatio = minDecisionPosition / new Vector2(SCALE_X, SCALE_Y);
+        Vector2 maxGridIndexRatio = maxDecisionPosition / new Vector2(SCALE_X, SCALE_Y);
+
+        Vector2 reelMinIndex = new Vector2(Mathf.FloorToInt(minGridIndexRatio.x), Mathf.FloorToInt(minGridIndexRatio.y));
+        Vector2 reelMaxIndex = new Vector2(Mathf.FloorToInt(maxGridIndexRatio.x), Mathf.FloorToInt(maxGridIndexRatio.y));
+
+        for (int ii = (int)reelMinIndex.x; ii <= reelMaxIndex.x; ii++) {
+            for (int jj = (int)reelMinIndex.y; jj <= reelMaxIndex.y; jj++) {
+                _grids[ii, jj].Paint();
+            }
+        }
+    }
+
+    private void OnValidate() {
+        Initialize();
     }
 
 }
