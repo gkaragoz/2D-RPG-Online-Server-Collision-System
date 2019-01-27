@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -44,9 +45,11 @@ public class GridSystem : MonoBehaviour {
             _parent = GameObject.Find("Parent").transform;
             if (_parent != null) {
                 if (_parent.childCount > 0) {
+                    Grid[] childGrids = _parent.GetComponentsInChildren<Grid>();
+
                     for (int ii = 0; ii < ROW; ii++) {
                         for (int jj = 0; jj < COLUMN; jj++) {
-                            _grids[ii, jj] = _parent.GetComponentInChildren<Grid>();
+                            _grids[ii, jj] = childGrids.Where(grid => grid.Matrix == new Vector2(ii, jj)).First();
                         }
                     }
                 }
@@ -102,8 +105,8 @@ public class GridSystem : MonoBehaviour {
     public void DeleteGrids() {
         Initialize();
 
-        for (int ii = 0; ii < _grids.GetLength(0); ii++) {
-            for (int jj = 0; jj < _grids.GetLength(1); jj++) {
+        for (int ii = 0; ii < ROW; ii++) {
+            for (int jj = 0; jj < COLUMN; jj++) {
                 if (_grids[ii, jj] != null) {
                     DestroyImmediate(_grids[ii, jj].gameObject);
                 }
