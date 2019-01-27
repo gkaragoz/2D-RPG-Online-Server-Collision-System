@@ -367,6 +367,9 @@ MonoBehaviour:
   _txtIndex: {fileID: 5096909364138214020}
   _greenMaterial: {fileID: 2100000, guid: 53dc7a4933c328a4791cb667183bf75e, type: 2}
   _normalMaterial: {fileID: 2100000, guid: f8b4c01c4a9b87f4c94816fe8cc0de9e, type: 2}
+  _redMaterial: {fileID: 2100000, guid: 0dba6b2c8be8ec6459cefd6771c40aa7, type: 2}
+  _isObstacle: 0
+  _hasInvaded: 0
   _matrix: {x: 0, y: 0}
   _size: {x: 1, y: 1}
   _position: {x: 0, y: 0, z: 0}
