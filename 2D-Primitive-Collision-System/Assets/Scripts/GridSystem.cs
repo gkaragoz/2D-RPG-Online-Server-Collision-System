@@ -5,7 +5,14 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class GridSystem : MonoBehaviour {
 
-    public bool IsCreated { get { return _grids == null ? false : true; } }
+    public bool IsCreated {
+        get {
+            if (_grids != null) {
+                return true;
+            }
+            return false;
+        }
+    }
 
     [Header("Initialization")]
     [SerializeField]
@@ -35,6 +42,8 @@ public class GridSystem : MonoBehaviour {
     private Transform _parent;
 
     public void CreateGrids() {
+        DeleteGrids();
+
         _grids = new Grid[ROW, COLUMN];
 
         SCALE_X = MAP_WIDTH / COLUMN;
@@ -58,36 +67,12 @@ public class GridSystem : MonoBehaviour {
     }
 
     public void DeleteGrids() {
-        Initialize();
-
-        for (int ii = 0; ii < ROW; ii++) {
-            for (int jj = 0; jj < COLUMN; jj++) {
-                if (_grids[ii, jj] != null) {
-                    DestroyImmediate(_grids[ii, jj].gameObject);
-                }
-            }
+        GameObject _parentObject = GameObject.Find("Parent");
+        if (_parentObject != null) {
+            DestroyImmediate(_parentObject);
         }
 
         _grids = null;
-    }
-
-    private void Initialize() {
-        if (_grids == null) {
-            _grids = new Grid[ROW, COLUMN];
-
-            _parent = GameObject.Find("Parent").transform;
-            if (_parent != null) {
-                if (_parent.childCount > 0) {
-                    Grid[] childGrids = _parent.GetComponentsInChildren<Grid>();
-
-                    for (int ii = 0; ii < ROW; ii++) {
-                        for (int jj = 0; jj < COLUMN; jj++) {
-                            _grids[ii, jj] = childGrids.Where(grid => grid.Matrix == new Vector2(ii, jj)).First();
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private void LateUpdate() {
@@ -117,7 +102,9 @@ public class GridSystem : MonoBehaviour {
     }
 
     private void OnValidate() {
-        Initialize();
+        if (IsCreated) {
+            SearchTarget();
+        }
     }
 
 }
@@ -136,10 +123,6 @@ public class GridSystemEditor : Editor {
         GUILayout.Space(10f);
         GUILayout.Label("GRID SYSTEM");
         if (GUILayout.Button("CREATE GRIDS")) {
-            if (gridSystem.IsCreated) {
-                gridSystem.DeleteGrids();
-            }
-
             gridSystem.CreateGrids();
 
             EditorWindow view = EditorWindow.GetWindow<SceneView>();
