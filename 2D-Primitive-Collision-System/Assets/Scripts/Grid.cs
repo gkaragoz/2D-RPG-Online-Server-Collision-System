@@ -58,7 +58,7 @@ public class Grid : MonoBehaviour {
         HasInvaded = true;
 
         if (_painterCoroutine == null && !_isObstacle) {
-            _painterCoroutine = StartCoroutine(Depaint());
+            //_painterCoroutine = StartCoroutine(Depaint());
         }
     }
 

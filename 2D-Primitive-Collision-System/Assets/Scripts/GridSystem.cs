@@ -15,6 +15,8 @@ public class GridSystem : MonoBehaviour {
         }
     }
 
+    public Transform[] Targets { get => _targets; }
+
     [Header("Initialization")]
     [SerializeField]
     private GameObject _gridPrefab;
@@ -86,22 +88,65 @@ public class GridSystem : MonoBehaviour {
         _grids = null;
     }
 
-    public List<Grid> GetNeighbours(params Grid[] grids) {
+    public List<Grid> GetNeighbours(List<Grid> grids) {
         List<Grid> allNeighbours = new List<Grid>();
 
-        for (int ii = 0; ii < grids.Length; ii++) {
+        for (int ii = 0; ii < grids.Count; ii++) {
             allNeighbours = allNeighbours.Union(grids[ii].Neighbours).ToList();
         }
-        for (int ii = 0; ii < grids.Length; ii++) {
+        for (int ii = 0; ii < grids.Count; ii++) {
             allNeighbours.Remove(grids[ii]);
         }
 
         return allNeighbours;
     }
 
+    public List<Grid> GetInvadedGrids(params Transform[] targets) {
+        List<Grid> invadedGrids = new List<Grid>();
+
+        for (int ii = 0; ii < targets.Length; ii++) {
+            Vector2 targetScale = new Vector2(Targets[ii].localScale.x, Targets[ii].localScale.z);
+            Vector2 targetPosition = new Vector2(Targets[ii].localPosition.x, Targets[ii].localPosition.z);
+
+            Vector2 minDecisionPosition = targetPosition - (targetScale * 0.5f);
+            Vector2 maxDecisionPosition = targetPosition + (targetScale * 0.5f);
+
+            Vector2 minGridIndexRatio = minDecisionPosition / new Vector2(SCALE_X, SCALE_Y);
+            Vector2 maxGridIndexRatio = maxDecisionPosition / new Vector2(SCALE_X, SCALE_Y);
+
+            Vector2 reelMinIndex = new Vector2(Mathf.FloorToInt(minGridIndexRatio.x), Mathf.FloorToInt(minGridIndexRatio.y));
+            Vector2 reelMaxIndex = new Vector2(Mathf.FloorToInt(maxGridIndexRatio.x), Mathf.FloorToInt(maxGridIndexRatio.y));
+
+            for (int jj = (int)reelMinIndex.x; jj <= reelMaxIndex.x; jj++) {
+                for (int kk = (int)reelMinIndex.y; kk <= reelMaxIndex.y; kk++) {
+                    invadedGrids.Add(_grids[jj, kk]);
+                }
+            }
+        }
+
+        return invadedGrids;
+    }
+
     private void LateUpdate() {
         if (IsCreated) {
-            SearchTarget();
+            //SearchTarget();
+
+            for (int ii = 0; ii < Targets.Length; ii++) {
+
+                List<Grid> invadedGrids = GetInvadedGrids(Targets);
+
+                for (int jj = 0; jj < invadedGrids.Count; jj++) {
+                    invadedGrids[jj].PaintObstacle();
+
+                    List<Grid> neighbours = GetNeighbours(invadedGrids);
+
+                    for (int kk = 0; kk < neighbours.Count; kk++) {
+                        neighbours[kk].Paint();
+                    }
+
+                }
+
+            }
         }
     }
 
@@ -126,9 +171,9 @@ public class GridSystem : MonoBehaviour {
     }
 
     private void SearchTarget() {
-        for (int ii = 0; ii < _targets.Length; ii++) {
-            Vector2 targetScale = new Vector2(_targets[ii].localScale.x, _targets[ii].localScale.z);
-            Vector2 targetPosition = new Vector2(_targets[ii].localPosition.x, _targets[ii].localPosition.z);
+        for (int ii = 0; ii < Targets.Length; ii++) {
+            Vector2 targetScale = new Vector2(Targets[ii].localScale.x, Targets[ii].localScale.z);
+            Vector2 targetPosition = new Vector2(Targets[ii].localPosition.x, Targets[ii].localPosition.z);
 
             Vector2 minDecisionPosition = targetPosition - (targetScale * 0.5f);
             Vector2 maxDecisionPosition = targetPosition + (targetScale * 0.5f);
@@ -149,7 +194,24 @@ public class GridSystem : MonoBehaviour {
 
     private void OnValidate() {
         if (IsCreated) {
-            SearchTarget();
+            //SearchTarget();
+
+            for (int ii = 0; ii < Targets.Length; ii++) {
+
+                List<Grid> invadedGrids = GetInvadedGrids(Targets);
+
+                for (int jj = 0; jj < invadedGrids.Count; jj++) {
+                    invadedGrids[jj].PaintObstacle();
+
+                    List<Grid> neighbours = GetNeighbours(invadedGrids);
+
+                    for (int kk = 0; kk < neighbours.Count; kk++) {
+                        neighbours[kk].Paint();
+                    }
+
+                }
+
+            }
         }
     }
 
@@ -185,18 +247,22 @@ public class GridSystemEditor : Editor {
         GUILayout.Space(10f);
         GUI.backgroundColor = Color.red;
         if (GUILayout.Button("GET NEIGHBOURS")) {
-            Grid grid = gridSystem.GetRandomGrid();
-            Grid grid2 = gridSystem.GetRandomGrid();
-            grid.PaintObstacle();
-            grid2.PaintObstacle();
 
-            Debug.Log("Selected Grid1: " + grid.Matrix.ToString());
-            Debug.Log("Selected Grid2: " + grid2.Matrix.ToString());
-            List<Grid> neighbours = gridSystem.GetNeighbours(grid, grid2);
+            for (int ii = 0; ii < gridSystem.Targets.Length; ii++) {
 
-            for (int ii = 0; ii < neighbours.Count; ii++) {
-                Debug.Log(neighbours[ii].Matrix.ToString());
-                neighbours[ii].Paint();
+                List<Grid> invadedGrids = gridSystem.GetInvadedGrids(gridSystem.Targets);
+
+                for (int jj = 0; jj < invadedGrids.Count; jj++) {
+                    invadedGrids[jj].PaintObstacle();
+
+                    List<Grid> neighbours = gridSystem.GetNeighbours(invadedGrids);
+
+                    for (int kk = 0; kk < neighbours.Count; kk++) {
+                        neighbours[kk].Paint();
+                    }
+
+                }
+
             }
 
             EditorWindow view = EditorWindow.GetWindow<SceneView>();
