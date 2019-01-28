@@ -128,25 +128,27 @@ public class GridSystem : MonoBehaviour {
     }
 
     private void LateUpdate() {
-        if (IsCreated) {
-            //SearchTarget();
+        if (IsCreated && Application.isPlaying) {
+            Process();
+        }
+    }
 
-            for (int ii = 0; ii < Targets.Length; ii++) {
+    private void Process() {
+        for (int ii = 0; ii < Targets.Length; ii++) {
 
-                List<Grid> invadedGrids = GetInvadedGrids(Targets);
+            List<Grid> invadedGrids = GetInvadedGrids(Targets);
 
-                for (int jj = 0; jj < invadedGrids.Count; jj++) {
-                    invadedGrids[jj].PaintObstacle();
+            for (int jj = 0; jj < invadedGrids.Count; jj++) {
+                invadedGrids[jj].PaintObstacle();
 
-                    List<Grid> neighbours = GetNeighbours(invadedGrids);
+                List<Grid> neighbours = GetNeighbours(invadedGrids);
 
-                    for (int kk = 0; kk < neighbours.Count; kk++) {
-                        neighbours[kk].Paint();
-                    }
-
+                for (int kk = 0; kk < neighbours.Count; kk++) {
+                    neighbours[kk].Paint();
                 }
 
             }
+
         }
     }
 
@@ -192,28 +194,39 @@ public class GridSystem : MonoBehaviour {
         }
     }
 
-    private void OnValidate() {
-        if (IsCreated) {
-            //SearchTarget();
-
-            for (int ii = 0; ii < Targets.Length; ii++) {
-
-                List<Grid> invadedGrids = GetInvadedGrids(Targets);
-
-                for (int jj = 0; jj < invadedGrids.Count; jj++) {
-                    invadedGrids[jj].PaintObstacle();
-
-                    List<Grid> neighbours = GetNeighbours(invadedGrids);
-
-                    for (int kk = 0; kk < neighbours.Count; kk++) {
-                        neighbours[kk].Paint();
-                    }
-
-                }
-
-            }
+    protected virtual void EditorUpdate() {
+        if (!Application.isPlaying) {
+            Process();
         }
     }
+
+#if UNITY_EDITOR
+
+    public void EditorPlay() {
+        //MonoBehaviour.res
+        if (!Application.isPlaying) {
+            //StopAllCoroutines();
+            EditorApplication.update -= EditorUpdate;
+            //RecalculatePath();
+            EditorApplication.update += EditorUpdate;
+            //goto restart;
+        } else {
+            Debug.Log("Play is only used in edit mode");
+        }
+    }
+
+    public void EditorStop() {
+        if (!Application.isPlaying) {
+            EditorApplication.update -= EditorUpdate;
+            //transform.position = Nodes.First().transform.position;
+            //StopCoroutine(ienum);
+            StopAllCoroutines();
+        } else {
+            Debug.Log("Stop is only used in edit mode");
+        }
+    }
+
+#endif
 
 }
 
@@ -227,47 +240,58 @@ public class GridSystemEditor : Editor {
     }
 
     public override void OnInspectorGUI() {
-        GUI.backgroundColor = Color.green;
+
         GUILayout.Space(10f);
         GUILayout.Label("GRID SYSTEM");
-        if (GUILayout.Button("CREATE GRIDS")) {
+
+        GUILayout.BeginHorizontal();
+
+        GUILayout.BeginVertical();
+
+        GUI.backgroundColor = Color.green;
+        if (GUILayout.Button("CREATE GRIDS", GUILayout.ExpandWidth(false), GUILayout.MaxHeight(75f), GUILayout.MaxWidth(150f))) {
             gridSystem.CreateGrids();
 
             EditorWindow view = EditorWindow.GetWindow<SceneView>();
             view.Repaint();
         }
         GUILayout.Space(10f);
+
         GUI.backgroundColor = Color.red;
-        if (GUILayout.Button("DELETE GRIDS")) {
+
+        if (GUILayout.Button("DELETE GRIDS", GUILayout.ExpandWidth(false), GUILayout.MaxHeight(75), GUILayout.MaxWidth(150f))) {
             gridSystem.DeleteGrids();
 
             EditorWindow view = EditorWindow.GetWindow<SceneView>();
             view.Repaint();
         }
-        GUILayout.Space(10f);
-        GUI.backgroundColor = Color.red;
-        if (GUILayout.Button("GET NEIGHBOURS")) {
 
-            for (int ii = 0; ii < gridSystem.Targets.Length; ii++) {
+        GUILayout.EndVertical();
 
-                List<Grid> invadedGrids = gridSystem.GetInvadedGrids(gridSystem.Targets);
+        GUILayout.BeginVertical();
 
-                for (int jj = 0; jj < invadedGrids.Count; jj++) {
-                    invadedGrids[jj].PaintObstacle();
+        GUI.backgroundColor = Color.green;
 
-                    List<Grid> neighbours = gridSystem.GetNeighbours(invadedGrids);
-
-                    for (int kk = 0; kk < neighbours.Count; kk++) {
-                        neighbours[kk].Paint();
-                    }
-
-                }
-
-            }
-
-            EditorWindow view = EditorWindow.GetWindow<SceneView>();
-            view.Repaint();
+        if (GUILayout.Button("START SIMULATE", GUILayout.ExpandWidth(false), GUILayout.MaxHeight(75f), GUILayout.MaxWidth(150f))) {
+#if UNITY_EDITOR
+            gridSystem.EditorPlay();
+#endif
         }
+
+        GUILayout.Space(10f);
+
+        GUI.backgroundColor = Color.red;
+
+        if (GUILayout.Button("STOP SIMULATE", GUILayout.ExpandWidth(false), GUILayout.MaxHeight(75f), GUILayout.MaxWidth(150f))) {
+#if UNITY_EDITOR
+            gridSystem.EditorStop();
+#endif
+        }
+
+        GUILayout.EndVertical();
+
+        GUILayout.EndHorizontal();
+
         GUI.backgroundColor = Color.cyan;
 
         base.OnInspectorGUI();
