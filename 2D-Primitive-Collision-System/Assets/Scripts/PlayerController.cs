@@ -12,6 +12,17 @@ public class PlayerController : MonoBehaviour {
         mapGenerator = GameObject.FindObjectOfType<MapGenerator>();
     }
 
+    private void Update() {
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+
+        Vector3 direction = new Vector3(horizontal, 0f, vertical);
+
+        if(direction != Vector3.zero) {
+            transform.Translate(mapGenerator.ProcessMovement(examplePolygon, direction));
+        }
+    }
+
     public enum Direction {
         UP,
         DOWN,
