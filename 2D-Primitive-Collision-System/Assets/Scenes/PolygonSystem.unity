@@ -141,6 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4493efced07343e45bad7d337926b9fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  polygonMaterial: {fileID: 2100000, guid: 0dba6b2c8be8ec6459cefd6771c40aa7, type: 2}
 --- !u!4 &696117922
 Transform:
   m_ObjectHideFlags: 0

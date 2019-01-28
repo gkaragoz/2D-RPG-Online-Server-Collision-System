@@ -4,6 +4,8 @@ using static PolygonSystem;
 
 public class MapGenerator : MonoBehaviour {
 
+    public Material polygonMaterial;
+
     List<ExamplePolygon> examplePolygons = new List<ExamplePolygon>();
     List<Polygon> polygons = new List<Polygon>();
     GameObject playerObject;
@@ -50,7 +52,7 @@ public class MapGenerator : MonoBehaviour {
         GameObject polygonObject = new GameObject();
         ExamplePolygon examplePolygon = polygonObject.AddComponent<ExamplePolygon>();
         examplePolygon.polygon = polygon;
-        examplePolygon.Draw(polygon.Points);
+        examplePolygon.Draw(polygon.Points, polygonMaterial);
 
         return polygonObject;
     }

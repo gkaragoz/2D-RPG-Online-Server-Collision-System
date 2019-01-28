@@ -16,7 +16,7 @@ public class PlayerController : MonoBehaviour {
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
-        Vector3 direction = new Vector3(horizontal, 0f, vertical);
+        Vector3 direction = new Vector3(horizontal, 0f, vertical) * movementSpeed;
 
         if(direction != Vector3.zero) {
             transform.Translate(mapGenerator.ProcessMovement(examplePolygon, direction));
