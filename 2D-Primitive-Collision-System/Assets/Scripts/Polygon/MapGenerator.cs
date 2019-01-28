@@ -5,7 +5,7 @@ public class MapGenerator : MonoBehaviour {
 
     List<ExamplePolygon> examplePolygons = new List<ExamplePolygon>();
     List<Polygon> polygons = new List<Polygon>();
-    Polygon player;
+    GameObject playerObject;
 
     private void Start() {
         Polygon p = new Polygon();
@@ -36,17 +36,21 @@ public class MapGenerator : MonoBehaviour {
 
         foreach (Polygon polygon in polygons) polygon.BuildEdges();
 
-        player = polygons[0];
+        playerObject = CreatePolygon(polygons[0].Points.ToArray());
+        playerObject.AddComponent<PlayerController>().movementSpeed = 1;
+        playerObject.name = "Player";
 
-        for (int ii = 0; ii < polygons.Count; ii++) {
+        for (int ii = 1; ii < polygons.Count; ii++) {
             CreatePolygon(polygons[ii].Points.ToArray());
         }
     }
 
-    public void CreatePolygon(Vector2[] vertices) {
+    public GameObject CreatePolygon(Vector2[] vertices) {
         GameObject polygonObject = new GameObject();
         ExamplePolygon polygon = polygonObject.AddComponent<ExamplePolygon>();
         polygon.Draw(vertices);
+
+        return polygonObject;
     }
     
 }
