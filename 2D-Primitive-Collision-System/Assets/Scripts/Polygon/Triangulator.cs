@@ -4,8 +4,8 @@ using System.Collections.Generic;
 public class Triangulator {
     private List<Vector2> m_points = new List<Vector2>();
 
-    public Triangulator(Vector2[] points) {
-        m_points = new List<Vector2>(points);
+    public Triangulator(List<Vector2> points) {
+        m_points = points;
     }
 
     public int[] Triangulate() {

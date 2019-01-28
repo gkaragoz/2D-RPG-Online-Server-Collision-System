@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using static PolygonSystem;
 
 public class MapGenerator : MonoBehaviour {
 
@@ -36,21 +37,40 @@ public class MapGenerator : MonoBehaviour {
 
         foreach (Polygon polygon in polygons) polygon.BuildEdges();
 
-        playerObject = CreatePolygon(polygons[0].Points.ToArray());
-        playerObject.AddComponent<PlayerController>().movementSpeed = 1;
+        playerObject = CreatePolygon(polygons[0]);
+        playerObject.AddComponent<PlayerController>().movementSpeed = 10;
         playerObject.name = "Player";
 
         for (int ii = 1; ii < polygons.Count; ii++) {
-            CreatePolygon(polygons[ii].Points.ToArray());
+            CreatePolygon(polygons[ii]);
         }
     }
 
-    public GameObject CreatePolygon(Vector2[] vertices) {
+    public GameObject CreatePolygon(Polygon polygon) {
         GameObject polygonObject = new GameObject();
-        ExamplePolygon polygon = polygonObject.AddComponent<ExamplePolygon>();
-        polygon.Draw(vertices);
+        ExamplePolygon examplePolygon = polygonObject.AddComponent<ExamplePolygon>();
+        examplePolygon.polygon = polygon;
+        examplePolygon.Draw(polygon.Points);
 
         return polygonObject;
     }
-    
+
+    public Vector2 ProcessMovement(ExamplePolygon examplePolygon, Vector3 direction) {
+        Vector2 playerTranslation = new Vector2(direction.x, direction.z);
+
+        foreach (Polygon polygon in polygons) {
+            if (polygon == examplePolygon.polygon) continue;
+
+            PolygonCollisionResult r = PolygonCollision(examplePolygon.polygon, polygon, playerTranslation);
+
+            if (r.WillIntersect) {
+                playerTranslation = playerTranslation + r.MinimumTranslationVector;
+                break;
+            }
+        }
+
+        examplePolygon.polygon.Offset(playerTranslation);
+        return playerTranslation;
+    }
+
 }

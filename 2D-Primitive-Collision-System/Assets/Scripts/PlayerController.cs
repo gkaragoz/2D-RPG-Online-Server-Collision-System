@@ -1,7 +1,16 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using static PolygonSystem;
 
 public class PlayerController : MonoBehaviour {
+
+    MapGenerator mapGenerator;
+    ExamplePolygon examplePolygon;
+
+    private void Start() {
+        examplePolygon = GetComponent<ExamplePolygon>();
+        mapGenerator = GameObject.FindObjectOfType<MapGenerator>();
+    }
 
     public enum Direction {
         UP,
@@ -17,38 +26,37 @@ public class PlayerController : MonoBehaviour {
     public float movementSpeed = 1f;
 
     public void Move(Direction direction) {
+        Vector3 directionVector = Vector3.zero;
         switch (direction) {
             case Direction.UP:
-                transform.Translate(Vector3.forward * movementSpeed);
+                directionVector = Vector3.forward * movementSpeed;
                 break;
             case Direction.DOWN:
-                transform.Translate(Vector3.back * movementSpeed);
+                directionVector = Vector3.back * movementSpeed;
                 break;
             case Direction.RIGHT:
-                transform.Translate(Vector3.right * movementSpeed);
+                directionVector = Vector3.right * movementSpeed;
                 break;
             case Direction.LEFT:
-                transform.Translate(Vector3.left * movementSpeed);
+                directionVector = Vector3.left * movementSpeed;
                 break;
             case Direction.UPPER_RIGHT:
-                transform.Translate(Vector3.forward * movementSpeed);
-                transform.Translate(Vector3.right * movementSpeed);
+                directionVector = (Vector3.forward + Vector3.right) * movementSpeed;
                 break;
             case Direction.UPPER_LEFT:
-                transform.Translate(Vector3.forward * movementSpeed);
-                transform.Translate(Vector3.left * movementSpeed);
+                directionVector = (Vector3.forward + Vector3.left) * movementSpeed;
                 break;
             case Direction.LOWER_RIGHT:
-                transform.Translate(Vector3.back * movementSpeed);
-                transform.Translate(Vector3.right * movementSpeed);
+                directionVector = (Vector3.back + Vector3.right) * movementSpeed;
                 break;
             case Direction.LOWER_LEFT:
-                transform.Translate(Vector3.back * movementSpeed);
-                transform.Translate(Vector3.left * movementSpeed);
+                directionVector = (Vector3.back + Vector3.left) * movementSpeed;
                 break;
             default:
                 break;
         }
+
+        transform.Translate(mapGenerator.ProcessMovement(examplePolygon, directionVector));
     }
 
 }

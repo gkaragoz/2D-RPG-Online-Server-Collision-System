@@ -10,7 +10,7 @@ public class PolygonSystem {
     }
 
     // Check if polygon A is going to collide with polygon B for the given velocity
-    public PolygonCollisionResult PolygonCollision(Polygon polygonA, Polygon polygonB, Vector2 velocity) {
+    public static PolygonCollisionResult PolygonCollision(Polygon polygonA, Polygon polygonB, Vector2 velocity) {
         PolygonCollisionResult result = new PolygonCollisionResult();
         result.Intersect = true;
         result.WillIntersect = true;
@@ -85,7 +85,7 @@ public class PolygonSystem {
 
     // Calculate the distance between [minA, maxA] and [minB, maxB]
     // The distance will be negative if the intervals overlap
-    public float IntervalDistance(float minA, float maxA, float minB, float maxB) {
+    public static float IntervalDistance(float minA, float maxA, float minB, float maxB) {
         if (minA < minB) {
             return minB - maxA;
         } else {
@@ -94,7 +94,7 @@ public class PolygonSystem {
     }
 
     // Calculate the projection of a polygon on an axis and returns it as a [min, max] interval
-    public void ProjectPolygon(Vector2 axis, Polygon polygon, ref float min, ref float max) {
+    public static void ProjectPolygon(Vector2 axis, Polygon polygon, ref float min, ref float max) {
         // To project a point on an axis use the dot product
         float d = Vector2.Dot(axis, (polygon.Points[0]));
         min = d;
